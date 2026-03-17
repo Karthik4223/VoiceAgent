@@ -10,6 +10,7 @@ class LanguageEnum(str, enum.Enum):
     ENGLISH = "en"
     HINDI = "hi"
     TAMIL = "ta"
+    TELUGU = "te"
 
 class AppointmentStatus(str, enum.Enum):
     PENDING = "pending"

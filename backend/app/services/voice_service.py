@@ -44,7 +44,7 @@ class VoiceService:
         voice = "aura-asteria-en"
         if language == "hi":
             voice = "aura-stella-en" # Placeholder - Deepgram is expanding multi-lang
-        elif language == "ta":
+        elif language == "te":
             voice = "aura-stella-en" # Placeholder
             
         url = f"https://api.deepgram.com/v1/speak?model={voice}"

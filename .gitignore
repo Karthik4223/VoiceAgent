@@ -21,3 +21,7 @@ backend/logs/*.log
 node_modules/
 dist/
 build/
+
+# ChromaDB & Tests
+chroma_db/
+test_*.py

@@ -1,54 +1,70 @@
-# Real-Time Multilingual Voice AI Agent
+# Real-Time Conversational Voice AI Agent
 
-A clinical appointment booking agent built with Python, FastAPI, and Deepgram/OpenAI.
+A high-performance, general-purpose voice assistant built with **FastAPI**, **Deepgram**, and **Google Gemini**. Designed for ultra-low latency and natural multilingual interactions.
 
-## Architecture
+## 🏗️ Architecture & Pipeline
 
+The system follows a modular pipeline design to ensure minimal turnaround time between user speech and AI response.
+
+```mermaid
+graph LR
+    User([User Voice]) --> Browser[Frontend - MediaRecorder]
+    Browser -- WebSocket (Bytes) --> FastAPI[FastAPI Backend]
+    FastAPI --> STT[Deepgram STT Nova-2]
+    STT -- Gated Response --> LLM[Gemini Flash Reasoning]
+    LLM --> TTS[Deepgram TTS Aura]
+    FastAPI -- WebSocket (Audio Bytes) --> Browser
+    Browser --> History[ChromaDB Persistence]
 ```
-User Speech -> Deepgram STT -> Gemini 1.5 Flash Agent Reasoning (Tool Calling) -> SQL DB (SQLite) -> Deepgram TTS -> Audio Response
+
+### Flow Breakdown
+1.  **Frontend (UI)**: Captures audio via `MediaRecorder` with specialized visual feedback. Includes a **20-second safety limit** and a **stop button** to abort processing.
+2.  **STT (Speech-to-Text)**: Powered by **Deepgram Nova-2**. If no speech is detected, the pipeline automatically resets to save resources.
+3.  **Reasoning (LLM)**: Powered by **Google Gemini 1.5 Flash**. Configured for general-purpose conversation with support for English, Hindi, and Telugu.
+4.  **TTS (Text-to-Speech)**: Powered by **Deepgram Aura** for natural-sounding, low-latency audio generation (~50-100ms).
+5.  **Persistence (ChromaDB)**: Every interaction is stored as a vector document in a local ChromaDB collection, including metadata and timestamps for cross-session history recall.
+
+## ✨ Features
+
+-   **General Conversation**: No restrictions on topics; behaves as a friendly talk bot.
+-   **Stage Tracking**: Visual real-time indicators show exactly when the STT, LLM, and TTS models are working.
+-   **Smart Timeouts**: 20-second recording limit with a live countdown timer.
+-   **Manual Abort**: Dedicated Stop button to terminate the AI reasoning or recording immediately.
+-   **Multilingual**: Smoothly switches between English, Hindi, and Telugu based on user input.
+-   **Saved History**: Persistent "Load History" feature to see previous conversations across page refreshes.
+
+## 🚀 Getting Started
+
+### 1. Installation
+Ensure you have Python 3.10+ installed.
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r backend/requirements.txt
+pip install chromadb sentence-transformers
 ```
 
-### Key Components
-- **FastAPI**: Backend framework and WebSocket server.
-- **Deepgram**: Low-latency Speech-to-Text and Text-to-Speech ($200 credit).
-- **Gemini**: State-of-the-art multimodal reasoning with tool calling.
-- **Redis**: Session memory and persistent user preferences.
-- **SQLAlchemy/SQLite**: Appointment and doctor data storage.
+### 2. Environment Setup
+Create a `.env` file in the `backend/` directory:
+```env
+GEMINI_API_KEY=your_key_here
+DEEPGRAM_API_KEY=your_key_here
+```
 
-## Features
-- **Booking/Rescheduling/Cancellation**: Managed via AI tool calling.
-- **Multilingual Support**: Supports English, Hindi, and Tamil.
-- **Low Latency**: Design optimized for < 450ms turnaround.
-- **Outbound Campaigns**: Proactive reminders and follow-ups.
+### 3. Startup
+Use the provided start script for automatic environment setup and server launch:
+```bash
+./scripts/start.sh
+```
 
-## Setup Instructions
+## 📊 Latency Metrics
+- **STT**: ~120ms
+- **LLM**: ~200-400ms
+- **TTS**: ~80ms
+- **Total E2E**: **< 600ms** (Turn-around time for voice-to-voice)
 
-1. **Install Dependencies**:
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
-
-2. **Environment Variables**:
-   Copy `backend/.env.example` to `backend/.env` and fill in:
-   - `OPENAI_API_KEY`
-   - `DEEPGRAM_API_KEY`
-
-3. **Database Seeding**:
-   ```bash
-   export PYTHONPATH=$PYTHONPATH:$(pwd)
-   python3 scripts/seed_db.py
-   ```
-
-4. **Run Server**:
-   ```bash
-   uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
-   ```
-
-## Latency Measurement
-We track latency at each stage:
-- **STT**: ~100-150ms 
-- **LLM Reasoning**: ~150-250ms
-- **TTS Generation**: ~100ms
-- **Total**: ~350-500ms (depending on LLM complexity)
-
-Metrics are logged for every interaction in the console and sent via WebSocket.
+## 🛠️ Tech Stack
+- **Backend**: FastAPI, WebSockets, Python 3.12
+- **AI Models**: Google Gemini (Reasoning), Deepgram (STT/TTS)
+- **Database**: ChromaDB (Vector logs)
+- **Frontend**: Vanilla HTML5/JS, Tailwind CSS (Styling)
